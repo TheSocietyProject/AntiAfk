@@ -1,0 +1,6 @@
+name: "AntiAFK"
+description: "A simple plugin for RE:Minecraft that does antiafk"
+authors:
+  - "Sasha"
+version: "1.0"
+mainClass: "com.sasha.replugin.Main"
