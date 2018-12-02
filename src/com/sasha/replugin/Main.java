@@ -6,8 +6,9 @@ import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlaye
 import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerSwingArmPacket;
 import com.sasha.eventsys.SimpleListener;
 import com.sasha.reminecraft.Configuration;
-import com.sasha.reminecraft.Logger;
 import com.sasha.reminecraft.api.RePlugin;
+import com.sasha.reminecraft.logging.ILogger;
+import com.sasha.reminecraft.logging.LoggerBuilder;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -17,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Main extends RePlugin implements SimpleListener {
 
-    public Logger logger = new Logger("AntiAFKPlugin");
+    public ILogger logger = LoggerBuilder.buildProperLogger("AntiAFK");
     public Config CFG = new Config("AntiAFK");
     private ScheduledExecutorService executorService;
     private Runnable spamTask = () -> {
