@@ -42,7 +42,6 @@ public class Main extends RePlugin implements SimpleListener {
 
     @Override
     public void onPluginInit() {
-        this.getReMinecraft().EVENT_BUS.registerListener(this);
         executorService = Executors.newScheduledThreadPool(4);
     }
 
@@ -66,6 +65,12 @@ public class Main extends RePlugin implements SimpleListener {
     public void onPluginDisable() {
         this.executorService.shutdownNow();
         logger.log("AntiAFK plugin disabled");
+    }
+
+    @Override
+    public void onPluginShutdown() {
+        this.executorService.shutdownNow();
+        logger.log("AntiAFK plugin shutdown");
     }
 
     @Override
