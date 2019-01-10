@@ -23,13 +23,13 @@ public class Main extends RePlugin implements SimpleListener {
     private ScheduledExecutorService executorService;
     private Runnable spamTask = () -> {
         Random rand = new Random();
-        this.getReMinecraft().minecraftClient.getSession().send(
-                new ClientChatPacket(CFG.var_spamMessages.get(rand.nextInt(CFG.var_spamMessages.size() - 1)))
-        );
+        if (this.getReMinecraft().minecraftClient != null && this.getReMinecraft().minecraftClient.getSession().isConnected() && !this.getReMinecraft().areChildrenConnected()) {
+            this.getReMinecraft().minecraftClient.getSession().send(new ClientChatPacket(CFG.var_spamMessages.get(rand.nextInt(CFG.var_spamMessages.size() - 1))));
+        }
     };
     private Runnable twistTask = () -> {
         Random rand = new Random();
-        if (this.getReMinecraft().minecraftServer.getSessions().isEmpty()) {
+        if (this.getReMinecraft().minecraftClient != null && this.getReMinecraft().minecraftClient.getSession().isConnected() && !this.getReMinecraft().areChildrenConnected()) {
             if (rand.nextBoolean()) {
                 this.getReMinecraft().minecraftClient.getSession().send(new ClientPlayerSwingArmPacket(Hand.MAIN_HAND));
             } else {
@@ -43,13 +43,6 @@ public class Main extends RePlugin implements SimpleListener {
     @Override
     public void onPluginInit() {
         executorService = Executors.newScheduledThreadPool(4);
-    }
-
-    @Override
-    public void onPluginEnable() {
-        if (this.executorService.isTerminated() || this.executorService.isShutdown()) {
-            executorService = Executors.newScheduledThreadPool(4);
-        }
         if (CFG.var_spamChat) {
             executorService.scheduleWithFixedDelay(spamTask, CFG.var_spamIntervalSeconds,
                     CFG.var_spamIntervalSeconds, TimeUnit.SECONDS);
@@ -58,12 +51,16 @@ public class Main extends RePlugin implements SimpleListener {
             executorService.scheduleWithFixedDelay(twistTask, CFG.var_twistIntervalSeconds,
                     CFG.var_twistIntervalSeconds, TimeUnit.SECONDS);
         }
+    }
+
+    @Override
+    public void onPluginEnable() {
         logger.log("AntiAFK plugin enabled");
     }
 
     @Override
     public void onPluginDisable() {
-        this.executorService.shutdownNow();
+        //this.executorService.shutdownNow();
         logger.log("AntiAFK plugin disabled");
     }
 
