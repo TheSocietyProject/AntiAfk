@@ -1,5 +1,7 @@
 package com.sasha.replugin;
 
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
+import com.github.steveice10.mc.protocol.data.SubProtocol;
 import com.github.steveice10.mc.protocol.data.game.entity.player.Hand;
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientChatPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerRotationPacket;
@@ -23,13 +25,13 @@ public class Main extends RePlugin implements SimpleListener {
     private ScheduledExecutorService executorService;
     private Runnable spamTask = () -> {
         Random rand = new Random();
-        if (this.getReMinecraft().minecraftClient != null && this.getReMinecraft().minecraftClient.getSession().isConnected() && !this.getReMinecraft().areChildrenConnected()) {
+        if (this.getReMinecraft().minecraftClient != null && this.getReMinecraft().minecraftClient.getSession().isConnected() && isInGame() && !this.getReMinecraft().areChildrenConnected()) {
             this.getReMinecraft().minecraftClient.getSession().send(new ClientChatPacket(CFG.var_spamMessages.get(rand.nextInt(CFG.var_spamMessages.size() - 1))));
         }
     };
     private Runnable twistTask = () -> {
         Random rand = new Random();
-        if (this.getReMinecraft().minecraftClient != null && this.getReMinecraft().minecraftClient.getSession().isConnected() && !this.getReMinecraft().areChildrenConnected()) {
+        if (this.getReMinecraft().minecraftClient != null && this.getReMinecraft().minecraftClient.getSession().isConnected() && isInGame() && !this.getReMinecraft().areChildrenConnected()) {
             if (rand.nextBoolean()) {
                 this.getReMinecraft().minecraftClient.getSession().send(new ClientPlayerSwingArmPacket(Hand.MAIN_HAND));
             } else {
@@ -79,6 +81,12 @@ public class Main extends RePlugin implements SimpleListener {
     public void registerConfig() {
         this.getReMinecraft().configurations.add(CFG);
     }
+
+    public boolean isInGame() {
+        MinecraftProtocol pckprot = (MinecraftProtocol) this.getReMinecraft().minecraftClient.getSession().getPacketProtocol();
+        return pckprot.getSubProtocol() == SubProtocol.GAME;
+    }
+
 }
 class Config extends Configuration {
     @ConfigSetting public boolean var_spamChat = false;
