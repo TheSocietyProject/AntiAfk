@@ -4,15 +4,13 @@ import com.github.steveice10.mc.protocol.data.SubProtocol;
 import com.github.steveice10.mc.protocol.data.game.entity.player.Hand;
 import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerRotationPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerSwingArmPacket;
-import com.github.steveice10.mc.protocol.packet.ingame.server.ServerChatPacket;
+import com.github.steveice10.packetlib.packet.Packet;
 import com.sasha.eventsys.SimpleListener;
 import com.sasha.reminecraft.Configuration;
 import com.sasha.reminecraft.ReMinecraft;
 import com.sasha.reminecraft.api.RePlugin;
 import com.sasha.reminecraft.logging.ILogger;
 import com.sasha.reminecraft.logging.LoggerBuilder;
-import com.sasha.reminecraft.util.TextMessageColoured;
-import com.sasha.simplecmdsys.SimpleCommand;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -33,6 +31,7 @@ public class Main extends RePlugin implements SimpleListener {
 
 
     private Runnable twistTask = () -> {
+
         if (this.getReMinecraft().minecraftClient == null)
             return;
 
@@ -42,19 +41,34 @@ public class Main extends RePlugin implements SimpleListener {
         if(!isInGame())
             return;
 
+        logger.log("the big question");
+
         if(!CFG.var_afkWhileConnected && this.getReMinecraft().areChildrenConnected())
             return;
 
+
+        logger.log("afk action");
         // if it came here the antiafk can be handled
 
         Random rand = new Random();
+        Packet p = null;
         if (rand.nextBoolean()) {
-            this.getReMinecraft().minecraftClient.getSession().send(new ClientPlayerSwingArmPacket(Hand.MAIN_HAND));
+
+            logger.log("moveHand");
+            p = new ClientPlayerSwingArmPacket(Hand.MAIN_HAND);
         } else {
+
             float yaw = -90 + (90 - -90) * rand.nextFloat();
             float pitch = -90 + (90 - -90) * rand.nextFloat();
-            this.getReMinecraft().minecraftClient.getSession().send(new ClientPlayerRotationPacket(true, yaw, pitch));
+
+            logger.log("move head by " + yaw + " and " + pitch);
+            p = new ClientPlayerRotationPacket(true, yaw, pitch);
         }
+
+        this.getReMinecraft().minecraftClient.getSession().send(p);
+        // TODO fixing the client packet sending..
+        /*if(this.getReMinecraft().areChildrenConnected())
+            this.getReMinecraft().sendToChildren(p);*/
 
     };
 
@@ -67,7 +81,6 @@ public class Main extends RePlugin implements SimpleListener {
                     CFG.var_twistIntervalSeconds, TimeUnit.SECONDS);
         }
 
-        registerCommands();
     }
 
     @Override
@@ -88,10 +101,7 @@ public class Main extends RePlugin implements SimpleListener {
     public void registerCommands() {
         try{
             ReMinecraft.INGAME_CMD_PROCESSOR.register(AfkCommand.class);
-            logger.log("REGISTER COMMAND NOW");
-        }catch(Exception e){
-            logger.log(e.toString());
-        }
+        }catch(Exception e){}
     }
 
     @Override
@@ -119,22 +129,3 @@ class Config extends Configuration {
 }
 
 
-class AfkCommand extends SimpleCommand{
-
-    ILogger logger = LoggerBuilder.buildProperLogger("AFKCOMMAND");
-
-    public AfkCommand(){
-        super("afk");
-        logger.log("constructor in AfkCommand");
-    }
-
-    @Override
-    public void onCommand(){
-        logger.log("wow at least onCommmand works");
-        boolean beAfk = !Main.INSTANCE.CFG.var_afkWhileConnected;
-        ReMinecraft.INSTANCE.sendToChildren(new ServerChatPacket(TextMessageColoured.from("&7changed beeing afk to " + beAfk)));
-
-        Main.INSTANCE.CFG.var_afkWhileConnected = beAfk;
-
-    }
-}
