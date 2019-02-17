@@ -2,5 +2,6 @@ name: "AntiAFK"
 description: "A simple plugin for RE:Minecraft that does antiafk"
 authors:
   - "Sasha"
+  - "IronException"
 version: "1.1"
-mainClass: "com.sasha.replugin.Main"
+mainClass: "Main"
